@@ -1,0 +1,1 @@
+A React SPA for gamified Wikipedia exploration. Traverse articles via random links, use multi-hop "Crazy Mode", track your navigation path, and bookmark articles for later viewing.
