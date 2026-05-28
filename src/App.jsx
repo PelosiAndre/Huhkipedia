@@ -7,6 +7,8 @@ function App() {
   const [articleHtml, setArticleHtml] = useState('');
   const [sections, setSections] = useState([]);
   const [currentTitle, setCurrentTitle] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [crazyHops, setCrazyHops] = useState(5);
   const articleRef = useRef(null);
 
   const fetchArticleByTitle = async (title) => {
@@ -58,6 +60,7 @@ function App() {
     e.preventDefault();
     if (!searchTerm) return;
 
+    setIsLoading(true);
     const searchUrl = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(searchTerm)}&utf8=&format=json&origin=*`;
     
     try {
@@ -76,6 +79,8 @@ function App() {
       }
     } catch (error) {
       console.error(error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -93,12 +98,34 @@ function App() {
       title = title.split('#')[0]; 
       const decodedTitle = decodeURIComponent(title);
       
-      fetchArticleByTitle(decodedTitle);
+      setIsLoading(true);
+      fetchArticleByTitle(decodedTitle).finally(() => setIsLoading(false));
     }
+  };
+
+  const handleCrazyMode = async () => {
+    if (!currentTitle) return;
+    
+    setIsLoading(true);
+    let tempTitle = currentTitle;
+
+    for (let i = 0; i < crazyHops; i++) {
+      const nextLink = await getRandomInternalLink(tempTitle);
+      if (!nextLink) break;
+      tempTitle = nextLink;
+    }
+
+    await fetchArticleByTitle(tempTitle);
+    setIsLoading(false);
   };
 
   return (
     <div className="app-container">
+      {isLoading && (
+        <div className="loading-overlay">
+          <div className="spinner"></div>
+        </div>
+      )}
       <header className="custom-header">
         <h1>Huhkipedia</h1>
         <form onSubmit={handleSearch}>
@@ -108,7 +135,7 @@ function App() {
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search Wikipedia..."
           />
-          <button type="submit">Search</button>
+          <button type="submit" disabled={isLoading}>Search</button>
         </form>
       </header>
       
@@ -136,7 +163,25 @@ function App() {
         </section>
 
         <aside className="sidebar right-sidebar">
-          
+          <div className="crazy-mode-controls">
+            <h3>Crazy Mode</h3>
+            <label>
+              Hops:
+              <input 
+                type="number" 
+                min="1" 
+                max="50" 
+                value={crazyHops} 
+                onChange={(e) => setCrazyHops(Number(e.target.value))}
+              />
+            </label>
+            <button 
+              onClick={handleCrazyMode} 
+              disabled={!currentTitle || isLoading}
+            >
+              Start Crazy Mode
+            </button>
+          </div>
         </aside>
       </main>
     </div>
