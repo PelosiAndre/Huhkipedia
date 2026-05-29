@@ -12,15 +12,25 @@ function RightSidebar({
 }) {
   return (
     <aside className="sidebar right-sidebar">
-      {user && currentTitle && (
+      {currentTitle && (
         <div className="panel action-panel">
-          <button 
-            className="save-btn" 
-            onClick={handleSaveArticle}
-            disabled={isLoading}
+          {user && (
+            <button 
+              className="save-btn" 
+              onClick={handleSaveArticle}
+              disabled={isLoading}
+            >
+              Save Current State
+            </button>
+          )}
+          <a 
+            href={`https://en.wikipedia.org/wiki/${encodeURIComponent(currentTitle.replace(/ /g, '_'))}`} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="external-link-btn"
           >
-            Save Current State
-          </button>
+            Open in Wikipedia
+          </a>
         </div>
       )}
 
