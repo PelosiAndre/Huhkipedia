@@ -493,6 +493,19 @@ body {
   text-decoration: underline;
 }
 
+.help-btn {
+  margin-right: 1rem;
+  border-radius: 50%;
+  width: 35px;
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
 @keyframes slideIn {
   from { transform: translateX(100%); opacity: 0; }
   to { transform: translateX(0); opacity: 1; }
