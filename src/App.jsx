@@ -3,6 +3,7 @@ import { supabase } from './supabaseClient';
 import Toast from './components/Toast';
 import AuthModal from './components/AuthModal';
 import SavedArticlesModal from './components/SavedArticlesModal';
+import HelpModal from './components/HelpModal';
 import Header from './components/Header';
 import LeftSidebar from './components/LeftSidebar';
 import RightSidebar from './components/RightSidebar';
@@ -25,6 +26,7 @@ function App() {
   
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showSavedModal, setShowSavedModal] = useState(false);
+  const [showHelpModal, setShowHelpModal] = useState(false);
   const [savedArticles, setSavedArticles] = useState([]);
   
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
@@ -313,6 +315,10 @@ function App() {
         />
       )}
 
+      {showHelpModal && (
+        <HelpModal onClose={() => setShowHelpModal(false)} />
+      )}
+
       <Header 
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
@@ -323,6 +329,7 @@ function App() {
         setShowAuthModal={setShowAuthModal}
         loadSavedArticles={loadSavedArticles}
         handleLogout={handleLogout}
+        setShowHelpModal={setShowHelpModal}
       />
       
       <main className="main-content">

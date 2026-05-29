@@ -7,7 +7,8 @@ function Header({
   user,
   setShowAuthModal,
   loadSavedArticles,
-  handleLogout
+  handleLogout,
+  setShowHelpModal
 }) {
   return (
     <header className="custom-header">
@@ -34,6 +35,14 @@ function Header({
       </form>
 
       <div className="header-actions">
+        <button 
+          className="header-btn outline help-btn" 
+          onClick={() => setShowHelpModal(true)}
+          title="Help"
+        >
+          ?
+        </button>
+        
         {!user ? (
           <button className="header-btn" onClick={() => setShowAuthModal(true)}>Log In</button>
         ) : (
