@@ -1,9 +1,11 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { supabase } from './supabaseClient';
+import { useTranslation } from 'react-i18next';
 import Toast from './components/Toast';
 import AuthModal from './components/AuthModal';
 import SavedArticlesModal from './components/SavedArticlesModal';
 import HelpModal from './components/HelpModal';
+import LanguageConfirmModal from './components/LanguageConfirmModal';
 import Header from './components/Header';
 import LeftSidebar from './components/LeftSidebar';
 import RightSidebar from './components/RightSidebar';
@@ -11,6 +13,9 @@ import ArticleViewer from './components/ArticleViewer';
 import './App.css';
 
 function App() {
+  const { t, i18n } = useTranslation();
+  const currentLang = i18n.language.startsWith('pt') ? 'pt' : 'en';
+
   const [searchTerm, setSearchTerm] = useState('');
   const [articleHtml, setArticleHtml] = useState('');
   const [sections, setSections] = useState([]);
@@ -27,6 +32,7 @@ function App() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showSavedModal, setShowSavedModal] = useState(false);
   const [showHelpModal, setShowHelpModal] = useState(false);
+  const [showLangModal, setShowLangModal] = useState(false);
   const [savedArticles, setSavedArticles] = useState([]);
   
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
@@ -52,9 +58,9 @@ function App() {
     }, 3000);
   };
 
-  const fetchArticleByTitle = async (title) => {
+  const fetchArticleByTitle = async (title, lang = currentLang) => {
     try {
-      const parseUrl = `https://en.wikipedia.org/w/api.php?action=parse&page=${encodeURIComponent(title)}&prop=text|sections&format=json&origin=*`;
+      const parseUrl = `https://${lang}.wikipedia.org/w/api.php?action=parse&page=${encodeURIComponent(title)}&prop=text|sections&format=json&origin=*`;
       
       const parseRes = await fetch(parseUrl);
       const parseData = await parseRes.json();
@@ -80,7 +86,7 @@ function App() {
   };
 
   const getRandomInternalLink = async (articleTitle) => {
-    const endpoint = `https://en.wikipedia.org/w/api.php?action=query&prop=links&titles=${encodeURIComponent(articleTitle)}&plnamespace=0&pllimit=max&format=json&origin=*`;
+    const endpoint = `https://${currentLang}.wikipedia.org/w/api.php?action=query&prop=links&titles=${encodeURIComponent(articleTitle)}&plnamespace=0&pllimit=max&format=json&origin=*`;
     
     try {
       const response = await fetch(endpoint);
@@ -131,7 +137,7 @@ function App() {
     if (!searchTerm) return;
 
     setIsLoading(true);
-    const searchUrl = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(searchTerm)}&utf8=&format=json&origin=*`;
+    const searchUrl = `https://${currentLang}.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(searchTerm)}&utf8=&format=json&origin=*`;
     
     try {
       const searchRes = await fetch(searchUrl);
@@ -187,12 +193,20 @@ function App() {
     setIsCrazyModeActive(!isCrazyModeActive);
   };
 
-  const handlePathClick = (title) => {
+  const handlePathClick = (title, itemLang) => {
     setIsLoading(true);
-    fetchArticleByTitle(title).finally(() => setIsLoading(false));
+    let fetchLang = currentLang;
+
+    if (itemLang && itemLang !== currentLang) {
+      fetchLang = itemLang;
+      localStorage.setItem('huhkipedia_lang', itemLang);
+      i18n.changeLanguage(itemLang);
+    }
+
+    fetchArticleByTitle(title, fetchLang).finally(() => setIsLoading(false));
   };
 
-  const handleClear = () => {
+  const handleClear = useCallback(() => {
     setSearchTerm('');
     setArticleHtml('');
     setSections([]);
@@ -200,6 +214,18 @@ function App() {
     setPath([]);
     setIsCrazyModeActive(false);
     setCrazyHops(5);
+  }, []);
+
+  const confirmLanguageChange = () => {
+    const nextLang = currentLang === 'en' ? 'pt' : 'en';
+    handleClear();
+    localStorage.setItem('huhkipedia_lang', nextLang);
+    i18n.changeLanguage(nextLang);
+    setShowLangModal(false);
+  };
+
+  const requestLanguageChange = () => {
+    setShowLangModal(true);
   };
 
   const handleSignUp = async (e) => {
@@ -211,7 +237,7 @@ function App() {
       showToast(error.message, 'error');
     } else {
       setShowAuthModal(false);
-      showToast('Signed up successfully!');
+      showToast(t('toasts.signedUp'));
     }
   };
 
@@ -224,14 +250,14 @@ function App() {
       showToast(error.message, 'error');
     } else {
       setShowAuthModal(false);
-      showToast('Logged in successfully!');
+      showToast(t('toasts.loggedIn'));
     }
   };
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
     setShowSavedModal(false);
-    showToast('Logged out successfully!');
+    showToast(t('toasts.loggedOut'));
   };
 
   const handleSaveArticle = async () => {
@@ -242,14 +268,14 @@ function App() {
         user_id: user.id,
         article_title: currentTitle,
         article_path: path,
-        language: 'en'
+        language: currentLang
       }
     ]);
     setIsLoading(false);
     if (error) {
       showToast(error.message, 'error');
     } else {
-      showToast('Article and path saved successfully!', 'success');
+      showToast(t('toasts.savedSuccess'), 'success');
     }
   };
 
@@ -280,7 +306,7 @@ function App() {
       showToast(error.message, 'error');
     } else {
       setSavedArticles((prev) => prev.filter((item) => item.id !== id));
-      showToast('Item deleted.', 'success');
+      showToast(t('toasts.deleted'), 'success');
     }
   };
 
@@ -319,6 +345,13 @@ function App() {
         <HelpModal onClose={() => setShowHelpModal(false)} />
       )}
 
+      {showLangModal && (
+        <LanguageConfirmModal 
+          onConfirm={confirmLanguageChange} 
+          onCancel={() => setShowLangModal(false)} 
+        />
+      )}
+
       <Header 
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
@@ -330,6 +363,7 @@ function App() {
         loadSavedArticles={loadSavedArticles}
         handleLogout={handleLogout}
         setShowHelpModal={setShowHelpModal}
+        requestLanguageChange={requestLanguageChange}
       />
       
       <main className="main-content">

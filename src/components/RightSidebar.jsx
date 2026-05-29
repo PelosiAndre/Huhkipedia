@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+
 function RightSidebar({
   user,
   currentTitle,
@@ -10,6 +12,9 @@ function RightSidebar({
   path,
   handlePathClick
 }) {
+  const { t, i18n } = useTranslation();
+  const currentLang = i18n.language.startsWith('pt') ? 'pt' : 'en';
+
   return (
     <aside className="sidebar right-sidebar">
       {currentTitle && (
@@ -20,25 +25,25 @@ function RightSidebar({
               onClick={handleSaveArticle}
               disabled={isLoading}
             >
-              Save Current State
+              {t('sidebar.saveState')}
             </button>
           )}
           <a 
-            href={`https://en.wikipedia.org/wiki/${encodeURIComponent(currentTitle.replace(/ /g, '_'))}`} 
+            href={`https://${currentLang}.wikipedia.org/wiki/${encodeURIComponent(currentTitle.replace(/ /g, '_'))}`} 
             target="_blank" 
             rel="noopener noreferrer"
             className="external-link-btn"
           >
-            Open in Wikipedia
+            {t('sidebar.openWiki')}
           </a>
         </div>
       )}
 
       {currentTitle && (
         <div className="crazy-mode-controls panel">
-          <h3>Crazy Mode</h3>
+          <h3>{t('sidebar.crazyMode')}</h3>
           <label>
-            Hops:
+            {t('sidebar.hops')}
             <input 
               type="number" 
               min="1" 
@@ -52,14 +57,14 @@ function RightSidebar({
             disabled={isLoading}
             style={{ backgroundColor: isCrazyModeActive ? '#dc3545' : '#0645ad' }}
           >
-            {isCrazyModeActive ? 'Stop Crazy Mode' : 'Start Crazy Mode'}
+            {isCrazyModeActive ? t('sidebar.stopCrazy') : t('sidebar.startCrazy')}
           </button>
         </div>
       )}
 
       {path.length > 0 && (
         <div className="path-history panel">
-          <h3>Navigation Path</h3>
+          <h3>{t('sidebar.navPath')}</h3>
           <ul>
             {path.map((p, index) => (
               <li key={index}>

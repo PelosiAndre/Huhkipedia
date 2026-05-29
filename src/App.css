@@ -506,6 +506,24 @@ body {
   font-size: 1.2rem;
 }
 
+.lang-toggle-btn {
+  margin-right: 1rem;
+  font-weight: bold;
+}
+
+.help-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  line-height: 1.5;
+}
+
+.help-subtitle {
+  margin: 0.5rem 0 0 0;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 0.5rem;
+}
+
 @keyframes slideIn {
   from { transform: translateX(100%); opacity: 0; }
   to { transform: translateX(0); opacity: 1; }
