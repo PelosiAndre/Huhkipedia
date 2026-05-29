@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import '../App.css';
 
 function AuthModal({
@@ -9,31 +10,33 @@ function AuthModal({
   handleSignUp,
   onClose
 }) {
+  const { t } = useTranslation();
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <h2>Authentication</h2>
+        <h2>{t('auth.title', 'Authentication')}</h2>
         <form className="auth-form" onSubmit={(e) => e.preventDefault()}>
           <input
             type="email"
-            placeholder="Email"
+            placeholder={t('auth.emailPlaceholder', 'Email')}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
           />
           <input
             type="password"
-            placeholder="Password"
+            placeholder={t('auth.passwordPlaceholder', 'Password')}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
           />
           <div className="auth-buttons">
-            <button type="button" onClick={handleLogin}>Log In</button>
-            <button type="button" onClick={handleSignUp}>Sign Up</button>
+            <button type="button" onClick={handleLogin}>{t('auth.loginBtn')}</button>
+            <button type="button" onClick={handleSignUp}>{t('auth.signupBtn')}</button>
           </div>
         </form>
-        <button className="close-modal-btn" onClick={onClose}>Close</button>
+        <button className="close-modal-btn" onClick={onClose}>{t('auth.closeBtn')}</button>
       </div>
     </div>
   );
