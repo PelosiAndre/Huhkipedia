@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 function RightSidebar({
@@ -14,72 +15,82 @@ function RightSidebar({
 }) {
   const { t, i18n } = useTranslation();
   const currentLang = i18n.language.startsWith('pt') ? 'pt' : 'en';
+  const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <aside className="sidebar right-sidebar">
-      {currentTitle && (
-        <div className="panel action-panel">
-          {user && (
-            <button 
-              className="save-btn" 
-              onClick={handleSaveArticle}
-              disabled={isLoading}
+    <>
+      <button
+        type="button"
+        className="right-sidebar-toggle"
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        {isOpen ? '✕' : '⚙️'}
+      </button>
+      <aside className={`sidebar right-sidebar ${isOpen ? 'open' : ''}`}>
+        {currentTitle && (
+          <div className="panel action-panel">
+            {user && (
+              <button
+                className="save-btn"
+                onClick={() => { handleSaveArticle(); setIsOpen(false); }}
+                disabled={isLoading}
+              >
+                {t('sidebar.saveState')}
+              </button>
+            )}
+            <a
+              href={`https://${currentLang}.wikipedia.org/wiki/${encodeURIComponent(currentTitle.replace(/ /g, '_'))}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="external-link-btn"
             >
-              {t('sidebar.saveState')}
+              {t('sidebar.openWiki')}
+            </a>
+          </div>
+        )}
+
+        {currentTitle && (
+          <div className="crazy-mode-controls panel">
+            <h3>{t('sidebar.crazyMode')}</h3>
+            <label>
+              {t('sidebar.hops')}
+              <input
+                type="number"
+                min="1"
+                max="50"
+                value={crazyHops}
+                onChange={(e) => setCrazyHops(Number(e.target.value))}
+              />
+            </label>
+            <button
+              onClick={() => { toggleCrazyMode(); setIsOpen(false); }}
+              disabled={isLoading}
+              style={{ backgroundColor: isCrazyModeActive ? '#dc3545' : '#0645ad' }}
+            >
+              {isCrazyModeActive ? t('sidebar.stopCrazy') : t('sidebar.startCrazy')}
             </button>
-          )}
-          <a 
-            href={`https://${currentLang}.wikipedia.org/wiki/${encodeURIComponent(currentTitle.replace(/ /g, '_'))}`} 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="external-link-btn"
-          >
-            {t('sidebar.openWiki')}
-          </a>
-        </div>
-      )}
+          </div>
+        )}
 
-      {currentTitle && (
-        <div className="crazy-mode-controls panel">
-          <h3>{t('sidebar.crazyMode')}</h3>
-          <label>
-            {t('sidebar.hops')}
-            <input 
-              type="number" 
-              min="1" 
-              max="50" 
-              value={crazyHops} 
-              onChange={(e) => setCrazyHops(Number(e.target.value))}
-            />
-          </label>
-          <button 
-            onClick={toggleCrazyMode} 
-            disabled={isLoading}
-            style={{ backgroundColor: isCrazyModeActive ? '#dc3545' : '#0645ad' }}
-          >
-            {isCrazyModeActive ? t('sidebar.stopCrazy') : t('sidebar.startCrazy')}
-          </button>
-        </div>
-      )}
-
-      {path.length > 0 && (
-        <div className="path-history panel">
-          <h3>{t('sidebar.navPath')}</h3>
-          <ul>
-            {path.map((p, index) => (
-              <li key={index}>
-                <button 
-                  className="path-link" 
-                  onClick={() => handlePathClick(p)}
-                >
-                  {p}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-    </aside>
+        {path.length > 0 && (
+          <div className="path-history panel">
+            <h3>{t('sidebar.navPath')}</h3>
+            <ul>
+              {path.map((p, index) => (
+                <li key={index}>
+                  <button
+                    className="path-link"
+                    onClick={() => { handlePathClick(p); setIsOpen(false); }}
+                  >
+                    {p}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </aside>
+    </>
   );
 }
 
