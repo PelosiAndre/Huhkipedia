@@ -11,13 +11,14 @@ function Header({
   loadSavedArticles,
   handleLogout,
   setShowHelpModal,
-  requestLanguageChange
+  requestLanguageChange,
+  isHome
 }) {
   const { t, i18n } = useTranslation();
   const currentLang = i18n.language.startsWith('pt') ? 'pt' : 'en';
 
   return (
-    <header className="custom-header">
+    <header className={`custom-header ${isHome ? 'home-layout' : ''}`}>
       <div className="header-brand">
         <h1>Huhkipedia</h1>
       </div>
