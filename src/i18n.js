@@ -52,7 +52,9 @@ const resources = {
         loggedIn: "Logged in successfully!",
         loggedOut: "Logged out successfully!",
         savedSuccess: "Article and path saved successfully!",
-        deleted: "Item deleted."
+        deleted: "Item deleted.",
+        invalidPage: "System or category pages are not supported.",
+        fetchError: "Error fetching the article."
       }
     }
   },
@@ -106,7 +108,9 @@ const resources = {
         loggedIn: "Sessão iniciada com sucesso!",
         loggedOut: "Sessão encerrada com sucesso!",
         savedSuccess: "Artigo e caminho salvos com sucesso!",
-        deleted: "Item excluído."
+        deleted: "Item excluído.",
+        invalidPage: "Páginas de sistema ou categoria não são suportadas.",
+        fetchError: "Erro ao carregar o artigo."
       }
     }
   }

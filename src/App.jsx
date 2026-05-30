@@ -12,6 +12,22 @@ import RightSidebar from './components/RightSidebar';
 import ArticleViewer from './components/ArticleViewer';
 import './App.css';
 
+const isInvalidNamespace = (title) => {
+  const lowerTitle = title.toLowerCase();
+  const invalidPrefixes = [
+    'category:', 'categoria:',
+    'special:', 'especial:',
+    'wikipedia:',
+    'help:', 'ajuda:',
+    'file:', 'ficheiro:', 'arquivo:',
+    'talk:', 'discussão:',
+    'user:', 'usuário:', 'utilizador:',
+    'template:', 'predefinição:',
+    'portal:'
+  ];
+  return invalidPrefixes.some(prefix => lowerTitle.startsWith(prefix));
+};
+
 function App() {
   const { t, i18n } = useTranslation();
   const currentLang = i18n.language.startsWith('pt') ? 'pt' : 'en';
@@ -60,7 +76,7 @@ function App() {
 
   const fetchArticleByTitle = async (title, lang = currentLang) => {
     try {
-      const parseUrl = `https://${lang}.wikipedia.org/w/api.php?action=parse&page=${encodeURIComponent(title)}&prop=text|sections&format=json&origin=*`;
+      const parseUrl = `https://${lang}.wikipedia.org/w/api.php?action=parse&page=${encodeURIComponent(title)}&redirects=1&prop=text|sections&format=json&origin=*`;
       
       const parseRes = await fetch(parseUrl);
       const parseData = await parseRes.json();
@@ -72,64 +88,93 @@ function App() {
         setSections(parseData.parse.sections);
         
         setPath((prev) => {
-          if (prev[prev.length - 1] === fetchedTitle) return prev;
-          return [...prev, fetchedTitle];
+          const newPath = [...prev];
+          
+          if (newPath.length > 0 && newPath[newPath.length - 1] === title) {
+            newPath[newPath.length - 1] = fetchedTitle;
+          } else if (newPath.length === 0 || newPath[newPath.length - 1] !== fetchedTitle) {
+            newPath.push(fetchedTitle);
+          }
+          
+          return newPath;
         });
         
         if (articleRef.current) {
           articleRef.current.scrollTop = 0;
         }
+      } else {
+        showToast(t('toasts.fetchError'), 'error');
       }
     } catch (error) {
-      console.error(error);
+      showToast(t('toasts.fetchError'), 'error');
     }
   };
 
   const getRandomInternalLink = async (articleTitle) => {
-    const endpoint = `https://${currentLang}.wikipedia.org/w/api.php?action=query&prop=links&titles=${encodeURIComponent(articleTitle)}&plnamespace=0&pllimit=max&format=json&origin=*`;
+    const endpoint = `https://${currentLang}.wikipedia.org/w/api.php?action=query&prop=links&titles=${encodeURIComponent(articleTitle)}&redirects=1&plnamespace=0&pllimit=max&format=json&origin=*`;
     
     try {
       const response = await fetch(endpoint);
       const data = await response.json();
       
+      let resolvedTitle = articleTitle;
+      if (data.query.redirects && data.query.redirects.length > 0) {
+        resolvedTitle = data.query.redirects[0].to;
+      }
+
       const pages = data.query.pages;
       const pageId = Object.keys(pages)[0];
 
       if (pageId === '-1' || !pages[pageId].links) {
-        return null;
+        return { nextLink: null, resolvedTitle };
       }
 
       const links = pages[pageId].links;
       const randomIndex = Math.floor(Math.random() * links.length);
 
-      return links[randomIndex].title;
+      return { nextLink: links[randomIndex].title, resolvedTitle };
     } catch (error) {
-      console.error(error);
-      return null;
+      return { nextLink: null, resolvedTitle: articleTitle };
     }
   };
 
   const executeCrazyHops = async (startTitle) => {
-    let tempTitle = startTitle;
     const traversedPaths = [startTitle];
+    let currentIdx = 0;
+    let hopsDone = 0;
 
-    for (let i = 0; i < crazyHops; i++) {
-      const nextLink = await getRandomInternalLink(tempTitle);
-      if (!nextLink) break;
-      traversedPaths.push(nextLink);
-      tempTitle = nextLink;
+    while (hopsDone < crazyHops) {
+      const currentTitle = traversedPaths[currentIdx];
+      const { nextLink, resolvedTitle } = await getRandomInternalLink(currentTitle);
+
+      if (resolvedTitle !== currentTitle) {
+        traversedPaths[currentIdx] = resolvedTitle;
+      }
+
+      if (!nextLink) {
+        if (currentIdx > 0) {
+          currentIdx--;
+        } else {
+          break;
+        }
+      } else {
+        traversedPaths.push(nextLink);
+        currentIdx = traversedPaths.length - 1;
+        hopsDone++;
+      }
     }
 
     if (traversedPaths.length > 0) {
       setPath((prev) => {
-        if (prev[prev.length - 1] === traversedPaths[0]) {
-          return [...prev, ...traversedPaths.slice(1)];
+        const newPrev = [...prev];
+        if (newPrev.length > 0 && newPrev[newPrev.length - 1] === traversedPaths[0]) {
+          return [...newPrev, ...traversedPaths.slice(1)];
         }
-        return [...prev, ...traversedPaths];
+        return [...newPrev, ...traversedPaths];
       });
     }
 
-    await fetchArticleByTitle(tempTitle);
+    await fetchArticleByTitle(traversedPaths[traversedPaths.length - 1]);
   };
 
   const handleSearch = async (e) => {
@@ -137,7 +182,7 @@ function App() {
     if (!searchTerm) return;
 
     setIsLoading(true);
-    const searchUrl = `https://${currentLang}.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(searchTerm)}&utf8=&format=json&origin=*`;
+    const searchUrl = `https://${currentLang}.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(searchTerm)}&srnamespace=0&utf8=&format=json&origin=*`;
     
     try {
       const searchRes = await fetch(searchUrl);
@@ -147,20 +192,30 @@ function App() {
         const initialTitle = searchData.query.search[0].title;
         
         setPath((prev) => {
-          if (prev[prev.length - 1] === initialTitle) return prev;
+          if (prev.length > 0 && prev[prev.length - 1] === initialTitle) return prev;
           return [...prev, initialTitle];
         });
 
-        const randomLink = await getRandomInternalLink(initialTitle);
+        const { nextLink, resolvedTitle } = await getRandomInternalLink(initialTitle);
         
-        if (randomLink) {
-          await fetchArticleByTitle(randomLink);
+        if (resolvedTitle !== initialTitle) {
+          setPath((prev) => {
+            const newPath = [...prev];
+            if (newPath.length > 0 && newPath[newPath.length - 1] === initialTitle) {
+              newPath[newPath.length - 1] = resolvedTitle;
+            }
+            return newPath;
+          });
+        }
+
+        if (nextLink) {
+          await fetchArticleByTitle(nextLink);
         } else {
-          await fetchArticleByTitle(initialTitle);
+          await fetchArticleByTitle(resolvedTitle);
         }
       }
     } catch (error) {
-      console.error(error);
+      showToast(t('toasts.fetchError'), 'error');
     } finally {
       setIsLoading(false);
     }
@@ -172,6 +227,11 @@ function App() {
     if (!target) return;
 
     const href = target.getAttribute('href');
+
+    if (href && href.startsWith('/w/')) {
+      e.preventDefault();
+      return;
+    }
     
     if (href && href.startsWith('/wiki/')) {
       e.preventDefault();
@@ -180,6 +240,11 @@ function App() {
       title = title.split('#')[0]; 
       const decodedTitle = decodeURIComponent(title);
       
+      if (isInvalidNamespace(decodedTitle)) {
+        showToast(t('toasts.invalidPage'), 'error');
+        return;
+      }
+
       setIsLoading(true);
       if (isCrazyModeActive) {
         executeCrazyHops(decodedTitle).finally(() => setIsLoading(false));
