@@ -55,6 +55,8 @@ function App() {
 
   const articleRef = useRef(null);
 
+  const isHome = path.length === 0;
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
@@ -429,31 +431,34 @@ function App() {
         handleLogout={handleLogout}
         setShowHelpModal={setShowHelpModal}
         requestLanguageChange={requestLanguageChange}
+        isHome={isHome}
       />
       
-      <main className="main-content">
-        <LeftSidebar sections={sections} />
-        
-        <ArticleViewer 
-          articleRef={articleRef}
-          handleArticleClick={handleArticleClick}
-          currentTitle={currentTitle}
-          articleHtml={articleHtml}
-        />
+      {!isHome && (
+        <main className="main-content">
+          <LeftSidebar sections={sections} />
+          
+          <ArticleViewer 
+            articleRef={articleRef}
+            handleArticleClick={handleArticleClick}
+            currentTitle={currentTitle}
+            articleHtml={articleHtml}
+          />
 
-        <RightSidebar 
-          user={user}
-          currentTitle={currentTitle}
-          handleSaveArticle={handleSaveArticle}
-          crazyHops={crazyHops}
-          setCrazyHops={setCrazyHops}
-          isCrazyModeActive={isCrazyModeActive}
-          toggleCrazyMode={toggleCrazyMode}
-          isLoading={isLoading}
-          path={path}
-          handlePathClick={handlePathClick}
-        />
-      </main>
+          <RightSidebar 
+            user={user}
+            currentTitle={currentTitle}
+            handleSaveArticle={handleSaveArticle}
+            crazyHops={crazyHops}
+            setCrazyHops={setCrazyHops}
+            isCrazyModeActive={isCrazyModeActive}
+            toggleCrazyMode={toggleCrazyMode}
+            isLoading={isLoading}
+            path={path}
+            handlePathClick={handlePathClick}
+          />
+        </main>
+      )}
     </div>
   );
 }
