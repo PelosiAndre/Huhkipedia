@@ -1,13 +1,15 @@
 import { useTranslation } from 'react-i18next';
+import { useModal } from '../hooks/useModal';
 import '../App.css';
 
 function SavedArticlesModal({ savedArticles, onClose, onDelete, onPathClick }) {
   const { t } = useTranslation();
+  const modalRef = useModal(onClose);
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content large-modal" onClick={(e) => e.stopPropagation()}>
-        <h2>{t('savedData.title')}</h2>
+    <div className="modal-overlay" onClick={onClose} role="presentation">
+      <div className="modal-content large-modal" onClick={(e) => e.stopPropagation()} ref={modalRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="saved-title">
+        <h2 id="saved-title">{t('savedData.title')}</h2>
         <div className="saved-list">
           {savedArticles.length === 0 ? (
             <p>{t('savedData.noData')}</p>

@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { useModal } from '../hooks/useModal';
 import '../App.css';
 
 function AuthModal({
@@ -11,11 +12,12 @@ function AuthModal({
   onClose
 }) {
   const { t } = useTranslation();
+  const modalRef = useModal(onClose);
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <h2>{t('auth.title', 'Authentication')}</h2>
+    <div className="modal-overlay" onClick={onClose} role="presentation">
+      <div className="modal-content" onClick={(e) => e.stopPropagation()} ref={modalRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="auth-title">
+        <h2 id="auth-title">{t('auth.title', 'Authentication')}</h2>
         <form className="auth-form" onSubmit={(e) => e.preventDefault()}>
           <input
             type="email"

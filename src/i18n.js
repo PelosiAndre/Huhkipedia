@@ -54,6 +54,7 @@ const resources = {
         savedSuccess: "Article and path saved successfully!",
         deleted: "Item deleted.",
         invalidPage: "System or category pages are not supported.",
+        noResults: "No articles found for your search.",
         fetchError: "Error fetching the article."
       }
     }
@@ -110,6 +111,7 @@ const resources = {
         savedSuccess: "Artigo e caminho salvos com sucesso!",
         deleted: "Item excluído.",
         invalidPage: "Páginas de sistema ou categoria não são suportadas.",
+        noResults: "Nenhum artigo encontrado para sua pesquisa.",
         fetchError: "Erro ao carregar o artigo."
       }
     }

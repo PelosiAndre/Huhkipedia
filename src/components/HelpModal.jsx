@@ -1,12 +1,14 @@
 import { useTranslation } from 'react-i18next';
+import { useModal } from '../hooks/useModal';
 
 function HelpModal({ onClose }) {
   const { t } = useTranslation();
+  const modalRef = useModal(onClose);
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <h2>{t('help.title')}</h2>
+    <div className="modal-overlay" onClick={onClose} role="presentation">
+      <div className="modal-content" onClick={(e) => e.stopPropagation()} ref={modalRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="help-title">
+        <h2 id="help-title">{t('help.title')}</h2>
         <div className="help-content">
           <p>
             {t('help.welcome')}

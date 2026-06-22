@@ -1,8 +1,12 @@
+import { useModal } from '../hooks/useModal';
+
 function LanguageConfirmModal({ onConfirm, onCancel }) {
+  const modalRef = useModal(onCancel);
+
   return (
-    <div className="modal-overlay" onClick={onCancel}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <h2 style={{ marginBottom: '1rem' }}>Change Language / Alterar Idioma</h2>
+    <div className="modal-overlay" onClick={onCancel} role="presentation">
+      <div className="modal-content" onClick={(e) => e.stopPropagation()} ref={modalRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="lang-title">
+        <h2 id="lang-title" style={{ marginBottom: '1rem' }}>Change Language / Alterar Idioma</h2>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', lineHeight: '1.5' }}>
           <p>
             Changing the language will clear your current search and navigation progress. Do you want to proceed?
