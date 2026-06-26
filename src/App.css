@@ -661,6 +661,22 @@ html, body {
   to { transform: translateX(0); opacity: 1; }
 }
 
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+table {
+  max-width: 100%;
+  overflow-x: auto;
+  display: block;
+}
+
+pre, code {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 @media (max-width: 768px) {
   .main-content {
     flex-direction: column;
@@ -796,9 +812,8 @@ html, body {
   }
 
   .custom-header.home-layout .header-actions {
-    position: absolute;
-    bottom: 1.5rem;
-    margin-top: 0;
+    position: static;
+    margin-top: 1.5rem;
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
@@ -813,7 +828,7 @@ html, body {
   .right-sidebar-toggle {
     display: flex;
     position: fixed;
-    bottom: 20px;
+    bottom: max(20px, env(safe-area-inset-bottom, 20px));
     right: 20px;
     width: 50px;
     height: 50px;
@@ -841,7 +856,7 @@ html, body {
     transform: translateY(100%);
     transition: transform 0.3s ease-in-out;
     overflow-y: auto;
-    padding: 1.5rem 1rem 6rem 1rem;
+    padding: 1.5rem 1rem calc(6rem + env(safe-area-inset-bottom, 0px)) 1rem;
     box-sizing: border-box;
   }
 
@@ -850,14 +865,62 @@ html, body {
   }
 
   .article-viewer {
-    padding: 1rem 0.5rem;
+    padding: 1rem;
     min-height: 70vh;
+  }
+
+  .article-title {
+    font-size: 1.8rem;
+  }
+
+  .infobox {
+    float: none;
+    width: 100%;
+    margin: 1rem 0;
+  }
+
+  .tright, .tleft {
+    float: none;
+    margin: 1rem 0;
+  }
+
+  .article-container table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  @media (max-width: 400px) {
+    .custom-header.home-layout .header-brand h1 {
+      font-size: 2rem;
+    }
   }
 
   .modal-content {
     padding: 1.5rem;
     max-height: 90vh;
   }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .left-sidebar {
+    width: 200px;
+    padding: 1rem;
+  }
+
+  .right-sidebar {
+    width: 200px;
+    padding: 1rem;
+  }
+
+  .article-container {
+    padding: 1.5rem;
+  }
+}
+
+@media (min-width: 1200px) {
+  html { font-size: 16px; }
+  .main-content { margin: 0 auto; }
 }
 
 @media (min-width: 1440px) {

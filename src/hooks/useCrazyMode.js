@@ -54,7 +54,7 @@ export function useCrazyMode({ getRandomInternalLink, fetchArticleByTitle, appen
 
   return {
     crazyHops, setCrazyHops,
-    isCrazyModeActive,
+    isCrazyModeActive, setIsCrazyModeActive,
     toggleCrazyMode,
     executeCrazyHops,
     DEFAULT_CRAZY_HOPS,

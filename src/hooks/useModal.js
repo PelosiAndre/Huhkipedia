@@ -2,6 +2,11 @@ import { useEffect, useRef } from 'react';
 
 export function useModal(onClose) {
   const modalRef = useRef(null);
+  const onCloseRef = useRef(onClose);
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  });
 
   useEffect(() => {
     const modal = modalRef.current;
@@ -12,7 +17,7 @@ export function useModal(onClose) {
 
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') {
-        onClose();
+        onCloseRef.current();
         return;
       }
 
@@ -47,7 +52,7 @@ export function useModal(onClose) {
         prevFocus.focus();
       }
     };
-  }, [onClose]);
+  }, []);
 
   return modalRef;
 }
